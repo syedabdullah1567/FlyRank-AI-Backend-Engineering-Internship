@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
@@ -56,3 +58,44 @@ async def post_task(task_data: TaskCreate) :
 
     tasks.append(new_task)
     return new_task
+
+# Stage 4 Endpoints
+
+class TaskUpdate(BaseModel):
+    title: Optional[str] = None
+    done: Optional[bool] = None
+
+
+
+@app.put("/tasks/{id}")
+async def update_task(id: int, update_data: TaskUpdate):
+
+    if update_data.title is None and update_data.done is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Request body must include 'title' or 'done'",
+        )
+
+    if update_data.title is not None and update_data.title.strip() == "":
+        raise HTTPException(status_code=400, detail="Title cannot be empty")
+
+    for task in tasks:
+        if task["id"] == id:
+            if update_data.title is not None:
+                task["title"] = update_data.title.strip()
+            if update_data.done is not None:
+                task["done"] = update_data.done
+
+            return task
+
+    raise HTTPException(status_code=404, detail=f"Task {id} not found")
+
+
+@app.delete("/tasks/{id}", status_code=204)
+async def delete_task(id: int):
+    for task in tasks:
+        if task["id"] == id:
+            tasks.remove(task)
+            return
+
+    raise HTTPException(status_code=404, detail=f"Task {id} not found")
