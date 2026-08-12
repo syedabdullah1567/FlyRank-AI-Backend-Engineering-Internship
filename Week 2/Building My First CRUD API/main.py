@@ -6,4 +6,8 @@ app = FastAPI()
 
 @app.get("/")
 async def root():
-    return {"Stage 0": "Hello Server"}
+    return { "name": "Task API", "version": "1.0", "endpoints": ["/tasks"] }
+
+@app.get("/health")
+async def root():
+    return { "status": "ok" }
