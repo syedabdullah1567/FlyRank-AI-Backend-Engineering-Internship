@@ -1,7 +1,9 @@
 import sqlite3
 
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+
+# Stage 0
 
 con = sqlite3.connect("tasks.db")
 
@@ -49,6 +51,8 @@ res = cur.execute('''
 
 print(res.fetchall())
 
+# Stage 1
+
 app = FastAPI()
 
 @app.get("/tasks")
@@ -58,3 +62,17 @@ async def get_all_tasks():
     ''')
 
     return res.fetchall()  
+
+@app.get("/tasks/{id}")
+async def get_task_by_id(id: int):
+    res = cur.execute(''' 
+        SELECT * FROM tasks
+    ''')
+
+    tasks = res.fetchall()
+
+    for task in tasks:
+        if task[0] == id:
+            return task
+    
+    raise HTTPException(status_code=404, detail=f"Task {id} not found")
