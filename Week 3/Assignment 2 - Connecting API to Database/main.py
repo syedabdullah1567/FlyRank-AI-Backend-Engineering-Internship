@@ -12,21 +12,21 @@ con = sqlite3.connect("tasks.db")
 
 cur = con.cursor()
 
-# Creating the database tables
+#Creating the database tables
 
-# res = cur.execute('''
-#     DROP TABLE IF EXISTS tasks
-# ''')
+res = cur.execute('''
+    DROP TABLE IF EXISTS tasks
+''')
 
-# res = cur.execute('''
+res = cur.execute('''
 
-#     CREATE TABLE tasks(
-#     id INTEGER PRIMARY KEY,
-#     title TEXT,
-#     done BOOLEAN
-# )
+    CREATE TABLE tasks(
+    id INTEGER PRIMARY KEY,
+    title TEXT,
+    done BOOLEAN
+)
 
-# ''')
+''')
 
 res = cur.execute("SELECT name FROM sqlite_master")
 print(res.fetchone())
