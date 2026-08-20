@@ -1,4 +1,6 @@
+import pstats
 import sqlite3
+from typing import Optional
 
 
 from fastapi import FastAPI, HTTPException
@@ -99,7 +101,6 @@ async def post_task(task_data: TaskCreate) :
     )
     con.commit()
 
-    # 4. Use cur.lastrowid to fetch the exact row created
     task_id = cur.lastrowid
     cur.execute("SELECT id, title, done FROM tasks WHERE id = ?", (task_id,))
     row = cur.fetchone()
@@ -111,3 +112,61 @@ async def post_task(task_data: TaskCreate) :
         "done": bool(row[2])
     }
 
+# Stage 3
+
+class TaskUpdate(BaseModel):
+    title: Optional[str] = None
+    done: Optional[bool] = None
+
+
+
+@app.put("/tasks/{task_id}")
+async def update_task(task_id: int, update_data: TaskUpdate):
+
+    cur.execute("SELECT id, title, done FROM tasks WHERE id = ?", (task_id,))
+    existing_task = cur.fetchone()
+    if not existing_task:
+        raise HTTPException(
+            status_code=pstats.HTTP_404_NOT_FOUND,
+            detail=f"Task {task_id} not found"
+        )
+
+    if update_data.title is None and update_data.done is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Request body must include 'title' or 'done'",
+        )
+    else :
+        cur.execute("UPDATE tasks SET title = ? WHERE id = ?", (update_data.title, task_id))
+        con.commit()
+
+
+    if update_data.title is not None and update_data.title.strip() == "":
+        raise HTTPException(status_code=400, detail="Title cannot be empty")
+    else:
+        cur.execute("UPDATE tasks SET done = ? WHERE id = ?", (update_data.done, task_id))
+        con.commit()
+
+
+
+    cur.execute("SELECT id, title, done FROM tasks WHERE id = ?", (task_id,))
+    row = cur.fetchone()
+
+    return {
+        "id": row[0],
+        "title": row[1],
+        "done": bool(row[2])
+    }
+
+
+@app.delete("/tasks/{task_id}", status_code=204)
+async def delete_task(task_id: int):
+    cur.execute("SELECT id, title, done FROM tasks WHERE id = ?", (task_id,))
+    existing_task = cur.fetchone()
+    if not existing_task:
+        raise HTTPException(
+            status_code=pstats.HTTP_404_NOT_FOUND,
+            detail=f"Task {task_id} not found"
+        )
+
+    cur.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
