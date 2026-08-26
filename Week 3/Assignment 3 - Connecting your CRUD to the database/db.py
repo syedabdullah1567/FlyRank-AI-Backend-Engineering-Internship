@@ -35,3 +35,16 @@ def init_db():
                     ('Complete Stage 0', false);
                 """)
             conn.commit()
+
+def get_all_tasks():
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id, title, done FROM tasks ORDER BY id ASC;")
+            return cur.fetchall()
+
+def get_task_by_id(task_id: int):
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            # Parameterized query (%s) prevents SQL injection
+            cur.execute("SELECT id, title, done FROM tasks WHERE id = %s;", (task_id,))
+            return cur.fetchone()
