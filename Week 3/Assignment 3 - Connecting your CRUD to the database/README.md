@@ -1,4 +1,4 @@
-```markdown
+
 # FlyRank Backend Track - Week 1 Assignment 3: Containerized Task API
 
 A FastAPI task CRUD API running against a containerized PostgreSQL database using Docker Compose.
